@@ -102,7 +102,7 @@ class ForceMultipartDict(dict):
 
 
 class Result(TypedDict):
-    response: dict[str, str]
+    response: dict[str, Any]
 
 
 def send_job_application(
@@ -136,17 +136,17 @@ def do_spam(
             ['Здравствуйте', 'Доброго времени суток', 'Приветствую']
         )
         message = f"{greeting}, я бы хотел чтобы Вы рассмотрели мою кандидатуру в качестве {vacancy}. Если Вас заинтересовало мое резюме, пожалуйста свяжитесь со мной с помощью {contact}, т.к. уведомления с сайта часто теряются среди множества писем в ящике. Спасибо."
-        if result := send_job_application(session, v['href'], message):
-            print(result)
-            if error := result.get('error', {}):
-                if error.get('type') == 'captcha':
-                    input(
-                        f"Перейди по ссылке и кликни по капче: https://career.habr.com{v['href']}"
-                    )
-                    time.sleep(11)
-            elif 'response' in result:
+        result = send_job_application(session, v['href'], message):
+        print(result)
+        if error := result.get('error', {}):
+            if error.get('type') == 'captcha':
+                input(
+                    f"Перейди по ссылке и кликни по капче: https://career.habr.com{v['href']}"
+                )
                 time.sleep(11)
-    if page + 1 <= r['meta']['totalPages']:
+        elif 'response' in result:
+            time.sleep(11)
+    if page < r['meta']['totalPages']:
         do_spam(session, query, contact, page + 1)
 
 
